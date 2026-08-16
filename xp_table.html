@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Dofus 3.5 - Calculateur XP : Personnage, Monture, Donjons & Oméga</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a3a 0%, #0f1a24 100%);
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
+            color: #eef2ff;
+        }
+
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 26, 36, 0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid #3e5a66;
+            padding: 15px 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        .fixed-header .header-content {
+            max-width: 1300px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .fixed-header h1 {
+            font-size: 1.6rem;
+            background: linear-gradient(135deg, #f9d976, #f39f86);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .fixed-header p {
+            font-size: 0.8rem;
+            color: #b9c7d9;
+            margin-top: 4px;
+        }
+
+        .fixed-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(10, 18, 25, 0.95);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid #2c4e5a;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 0.7rem;
+            color: #6c8b9a;
+            z-index: 1000;
+            font-family: monospace;
+        }
+        .fixed-footer .footer-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .fixed-footer .separator {
+            color: #3e5a66;
+        }
+
+        .main-scrollable {
+            padding-top: 110px;
+            padding-bottom: 60px;
+            max-width: 1300px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            border-bottom: 2px solid #2c3e44;
+            margin-bottom: 28px;
+            background: transparent;
+        }
+        .tab-btn {
+            background: #1e2f3a;
+            border: none;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 40px 40px 0 0;
+            cursor: pointer;
+            color: #cbd5e6;
+            transition: all 0.2s ease;
+            font-family: inherit;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .tab-btn.active {
+            background: #2c4b5c;
+            color: white;
+            border-bottom: 3px solid #f4b942;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.2);
+        }
+        .tab-btn:hover:not(.active) {
+            background: #254452;
+            color: #f0e6a0;
+        }
+        .tab-content {
+            display: none;
+            animation: fade 0.25s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .card {
+            background: rgba(18, 28, 36, 0.85);
+            backdrop-filter: blur(2px);
+            border-radius: 32px;
+            padding: 24px 28px;
+            margin-bottom: 28px;
+            border: 1px solid #3e5a66;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.4);
+        }
+        .card-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-left: 5px solid #f4b942;
+            padding-left: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .omega-badge {
+            background: linear-gradient(135deg, #f4b942, #e67e22);
+            font-size: 0.8rem;
+            padding: 4px 12px;
+            border-radius: 40px;
+            margin-left: 12px;
+        }
+        .grid-2cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+        }
+        .grid-3cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        .input-group {
+            margin-bottom: 18px;
+        }
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #bcd0df;
+        }
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            background: #0f1b22;
+            border: 1px solid #3e5f6b;
+            border-radius: 24px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: 0.2s;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #f4b942;
+            box-shadow: 0 0 0 2px rgba(244,185,66,0.3);
+        }
+        .range-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        .range-row input[type="range"] {
+            flex: 1;
+            padding: 0;
+        }
+        button.secondary {
+            background: #2c4f5e;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 40px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        button.secondary:hover {
+            background: #3e6c7e;
+        }
+        .result-box {
+            background: #0b141c;
+            border-radius: 28px;
+            padding: 20px;
+            margin-top: 25px;
+            border-left: 6px solid #f4b942;
+        }
+        .result-main-value {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .result-main-number {
+            font-size: 3.2rem;
+            font-weight: 800;
+            color: #f5bc70;
+            line-height: 1;
+        }
+        .result-main-label {
+            font-size: 1rem;
+            color: #b9d0e0;
+        }
+        .result-detail {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed #2c4e5a;
+            padding: 10px 0;
+            font-size: 0.95rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .progress-bar-container {
+            background: #1e2f38;
+            border-radius: 40px;
+            height: 18px;
+            margin: 20px 0 15px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            background: linear-gradient(90deg, #f4b942, #ffd966);
+            width: 0%;
+            height: 100%;
+            border-radius: 40px;
+            transition: width 0.3s;
+        }
+        .xp-table-wrapper {
+            margin-top: 20px;
+            max-height: 350px;
+            overflow-y: auto;
+            background: #0e1921;
+            border-radius: 28px;
+            padding: 12px;
+        }
+        .xp-table-item {
+            background: #162b34;
+            border-radius: 40px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .xp-level {
+            font-weight: bold;
+            background: #1e3b44;
+            padding: 2px 10px;
+            border-radius: 30px;
+        }
+        .level-marker {
+            background: #2c4553;
+            padding: 6px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.1s;
+            display: inline-block;
+        }
+        .level-marker.milestone {
+            background: #f4b942;
+            color: #1a2a2e;
+        }
+        .flex-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c2e3a;
+            color: #ffcf9a;
+            padding: 12px 24px;
+            border-radius: 60px;
+            z-index: 1100;
+            font-weight: 500;
+            backdrop-filter: blur(12px);
+        }
+        .omega-highlight {
+            background: linear-gradient(135deg, #1e3a2f, #0f2a1f);
+            border: 1px solid #f4b942;
+        }
+        .bonus-badge {
+            background: #2c4f5e;
+            border-radius: 20px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .total-cost {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #f5bc70;
+        }
+        @media (max-width: 640px) {
+            .card { padding: 18px; }
+            .tab-btn { padding: 8px 18px; font-size: 0.9rem; }
+            .fixed-header h1 { font-size: 1.2rem; }
+            .main-scrollable { padding-top: 100px; }
+            .fixed-footer .footer-content { gap: 10px; flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="fixed-header">
+    <div class="header-content">
+        <h1>🐉 DOFUS 3.5 · XP PROGRESS + OMÉGA</h1>
+        <p>Personnage (1→200) • Monture • Donjons • Niveaux Oméga (201+)</p>
+    </div>
+</div>
+
+<div class="fixed-footer">
+    <div class="footer-content">
+        <span>⚡ Formule : XP_Total(n) = 5 000 000 000 × 1,01^n + 555 424 000 | n = niveau Oméga (1 = 201)</span>
+        <span class="separator">•</span>
+        <span>✨ Multifarm - Xp by GSTK © 2026</span>
+    </div>
+</div>
+
+<div class="main-scrollable">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-mount">🐎 Monture & Élevage</button>
+        <button class="tab-btn" data-tab="tab-dungeon">⚔️ Donjons & Objectifs</button>
+        <button class="tab-btn" data-tab="tab-omega">🌀 Oméga (201+)</button>
+    </div>
+
+    <!-- SECTION MONTURE -->
+    <div id="tab-mount" class="tab-content active">
+        <div class="card">
+            <div class="card-title">🐴 Calculateur de Monture (Niv. 1 → 100)</div>
+            <div class="grid-2cols">
+                <div>
+                    <div class="input-group">
+                        <label>🦄 Type de monture</label>
+                        <select id="mount-type">
+                            <option value="dragodinde">Dragodinde (XP combat 500)</option>
+                            <option value="familier">Familier (XP combat 500)</option>
+                            <option value="muldo">Muldo (XP élevage 800)</option>
+                            <option value="volkorne">Volkorne (XP élevage 700)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>📊 Niveau actuel (1-100)</label>
+                        <input type="number" id="mount-current-level" min="1" max="100" value="1" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>📈 XP% actuel (0-99%)</label>
+                        <input type="number" id="mount-current-xp" min="0" max="99" value="0" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>🎯 Niveau cible (1-100)</label>
+                        <input type="number" id="mount-target-level" min="1" max="100" value="100">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>⚡ XP par action (combat / élevage)</label>
+                        <input type="number" id="mount-xp-per-action" value="500" step="50">
+                    </div>
+                    <div class="input-group">
+                        <label>💰 Coût par action (Kamas)</label>
+                        <input type="number" id="mount-cost-per-action" value="0" step="100">
+                    </div>
+                    <div class="input-group">
+                        <label>⏱️ Temps par action (secondes)</label>
+                        <input type="number" id="mount-time-per-action" value="30" step="5">
+                    </div>
+                    <div class="flex-buttons">
+                        <span style="font-size:0.75rem;">Raccourcis niveaux :</span>
+                        <div id="level-markers" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section bonus XP et coûts -->
+            <div class="grid-3cols" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #3e5a66;">
+                <div class="input-group">
+                    <label>🎁 Multiplicateur XP (%)</label>
+                    <input type="number" id="mount-xp-multiplier" value="100" step="10" min="50" max="300">
+                    <small style="color:#8aaec0;">100% = normal</small>
+                </div>
+                <div class="input-group">
+                    <label>💰 Coût Clip (Kamas)</label>
+                    <input type="number" id="mount-clip-price" value="50000" step="5000">
+                </div>
+                <div class="input-group">
+                    <label>🍾 Coût Potion de soin (Kamas)</label>
+                    <input type="number" id="mount-potion-price" value="2000" step="500">
+                </div>
+            </div>
+            
+            <div class="result-box" id="mount-result" style="display: none;">
+                <div id="mount-result-content"></div>
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="mount-progress-fill"></div>
+                </div>
+            </div>
+        </div>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="card-title" style="margin-bottom: 0;">📜 Table XP Monture</div>
+                <button class="secondary" id="toggleMountTableBtn">▼ Afficher/masquer</button>
+            </div>
+            <div id="mount-xp-table" style="margin-top: 16px;">
+                <div class="xp-table-wrapper">
+                    <div style="display: grid; grid-template-columns: repeat(2,1fr); gap: 20px;">
+                        <div><h4>Niveaux 1-20</h4><div id="mount-xp-1-20"></div></div>
+                        <div><h4>Niveaux 21-40</h4><div id="mount-xp-21-40"></div></div>
+                        <div><h4>Niveaux 41-60</h4><div id="mount-xp-41-60"></div></div>
+                        <div><h4>Niveaux 61-80</h4><div id="mount-xp-61-80"></div></div>
+                        <div><h4>Niveaux 81-100</h4><div id="mount-xp-81-100"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION DONJONS -->
+    <div id="tab-dungeon" class="tab-content">
+        <div class="card">
+            <div class="card-title">🏆 Calculateur de Donjons (Personnage 1→200)</div>
+            <div class="grid-2cols">
+                <div>
+                    <div class="input-group">
+                        <label>🧙 Niveau actuel (1-200)</label>
+                        <input type="number" id="dungeon-current-level" min="1" max="200" value="1">
+                    </div>
+                    <div class="input-group">
+                        <label>📊 Pourcentage XP actuel (%)</label>
+                        <input type="number" id="dungeon-current-xp" min="0" max="99" value="0">
+                    </div>
+                    <div class="input-group">
+                        <label>🎯 Niveau cible (max 200)</label>
+                        <input type="number" id="dungeon-target-level" min="1" max="200" value="200">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>⚔️ XP par donjon (base)</label>
+                        <div class="range-row">
+                            <input type="range" id="dungeon-xp-slider" min="1000" max="5000000" step="5000" value="1000000">
+                            <input type="number" id="dungeon-xp-value" value="1000000" step="10000" style="width: 130px;">
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>🎁 Multiplicateur XP (%)</label>
+                        <input type="number" id="dungeon-xp-multiplier" value="100" step="10" min="50" max="300">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section bonus XP -->
+            <div class="grid-3cols" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #3e5a66;">
+                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-weekend"> 🎉 Week-end XP (+50%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-potion"> 🧪 Potion d'XP (+30%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-familier"> 🐕 Familier (+20%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-calamar"> 🦑 Calamar (+15%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-sub"> 👑 Abonnement (+10%)</div>
+            </div>
+            
+            <div class="result-box" id="dungeon-result" style="display: none;">
+                <div id="dungeon-result-content"></div>
+            </div>
+        </div>
+        <div class="card" id="dungeon-progress-card">
+            <div class="card-title">📊 Simulation : Niveau après X donjons</div>
+            <div class="grid-2cols">
+                <div>
+                    <div class="input-group">
+                        <label>Niveau actuel (1-200)</label>
+                        <input type="number" id="dungeon-progress-level" min="1" max="200" value="80">
+                    </div>
+                    <div class="input-group">
+                        <label>XP actuel (%)</label>
+                        <input type="number" id="dungeon-progress-xp" min="0" max="99" value="0">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>Nombre de donjons / actions</label>
+                        <input type="number" id="dungeon-count" value="10" step="1" min="0">
+                    </div>
+                    <div class="input-group">
+                        <label>XP par donjon (base)</label>
+                        <div class="range-row">
+                            <input type="range" id="dungeon-xp-slider-progress" min="500" max="3000000" step="5000" value="500000">
+                            <input type="number" id="dungeon-xp-value-progress" value="500000" step="10000" style="width: 120px;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="secondary" id="calc-progress-btn" style="margin-top: 8px;">🔄 Calculer le niveau obtenu</button>
+            <div class="result-box" id="dungeon-progress-result" style="display: none; margin-top: 20px;">
+                <div id="dungeon-progress-content"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title" style="cursor: pointer;" id="toggleXpTableBtn">📖 Tableau XP Personnage 1→200 ▼</div>
+            <div id="xp-table-full" style="margin-top: 12px;">
+                <div class="xp-table-wrapper">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap: 12px;">
+                        <div><strong>1 → 50</strong><div id="xp-levels-1-50"></div></div>
+                        <div><strong>51 → 100</strong><div id="xp-levels-51-100"></div></div>
+                        <div><strong>101 → 150</strong><div id="xp-levels-101-150"></div></div>
+                        <div><strong>151 → 190</strong><div id="xp-levels-151-190"></div></div>
+                        <div><strong>191 → 200</strong><div id="xp-levels-191-200"></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION OMÉGA (201+) -->
+    <div id="tab-omega" class="tab-content">
+        <div class="card omega-highlight">
+            <div class="card-title">🌀 Calculateur Oméga <span class="omega-badge">Niveaux 201+</span></div>
+            <div class="grid-2cols">
+                <div>
+                    <div class="input-group">
+                        <label>🌀 Niveau Oméga (1 = 201, 2 = 202...)</label>
+                        <input type="number" id="omega-current-omega" min="1" max="300" value="1" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>📈 XP% actuel dans le niveau (%)</label>
+                        <input type="number" id="omega-current-xp" min="0" max="99" value="0" step="1">
+                    </div>
+                    <div class="input-group">
+                        <label>🎯 Niveau Oméga cible</label>
+                        <input type="number" id="omega-target-omega" min="1" max="300" value="10" step="1">
+                    </div>
+                </div>
+                <div>
+                    <div class="input-group">
+                        <label>⚡ XP par action (base)</label>
+                        <input type="number" id="omega-xp-per-action" value="1000000" step="100000">
+                    </div>
+                    <div class="input-group">
+                        <label>🎁 Multiplicateur XP (%)</label>
+                        <input type="number" id="omega-xp-multiplier" value="100" step="10" min="50" max="300">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section bonus XP et coûts pour Oméga -->
+            <div class="grid-3cols" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #3e5a66;">
+                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-weekend"> 🎉 Week-end XP (+50%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-potion"> 🧪 Potion d'XP (+30%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-familier"> 🐕 Familier (+20%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-calamar"> 🦑 Calamar (+15%)</div>
+                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-sub"> 👑 Abonnement (+10%)</div>
+            </div>
+            
+            <div class="grid-3cols" style="margin-top: 10px;">
+                <div class="input-group">
+                    <label>💰 Coût Clip (Kamas)</label>
+                    <input type="number" id="omega-clip-price" value="50000" step="5000">
+                </div>
+                <div class="input-group">
+                    <label>🍾 Coût Potion (Kamas)</label>
+                    <input type="number" id="omega-potion-price" value="2000" step="500">
+                </div>
+                <div class="input-group">
+                    <label>📦 Coût ressource/action (Kamas)</label>
+                    <input type="number" id="omega-resource-price" value="0" step="1000">
+                </div>
+            </div>
+            
+            <div class="result-box" id="omega-result" style="display: none;">
+                <div id="omega-result-content"></div>
+            </div>
+            <div class="result-box" id="omega-detail" style="margin-top: 15px; display: none;">
+                <div id="omega-detail-content"></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">📜 Aperçu XP Oméga (n = 1 à 20)</div>
+            <div class="xp-table-wrapper">
+                <div id="omega-table-preview" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(230px,1fr)); gap: 8px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================ FORMULE OMÉGA ================
+    function getTotalXpForOmegaLevel(omegaLevel) {
+        if (omegaLevel < 1) return 0;
+        const value = 5000000000 * Math.pow(1.01, omegaLevel) + 555424000;
+        return Math.round(value);
+    }
+
+    function getXpNeededForOmegaLevel(omegaLevel) {
+        if (omegaLevel < 1) return 0;
+        return getTotalXpForOmegaLevel(omegaLevel + 1) - getTotalXpForOmegaLevel(omegaLevel);
+    }
+
+    // ================ XP OFFICIELLE 1-200 ================
+    const XP_TABLE_OFFICIAL = {
+        1:0,2:110,3:650,4:1500,5:2800,6:4800,7:7300,8:10500,9:14500,10:19200,
+        11:25200,12:32600,13:41000,14:50500,15:61000,16:75000,17:91000,18:115000,19:142000,20:171000,
+        21:202000,22:235000,23:270000,24:310000,25:353000,26:398500,27:448000,28:503000,29:561000,30:621000,
+        31:687000,32:755000,33:829000,34:910000,35:1000000,36:1100000,37:1240000,38:1400000,39:1580000,40:1780000,
+        41:2000000,42:2250000,43:2530000,44:2850000,45:3200000,46:3570000,47:3960000,48:4400000,49:4860000,50:5350000,
+        51:5860000,52:6390000,53:6950000,54:7530000,55:8130000,56:8765000,57:9420000,58:10150000,59:10894000,60:11655000,
+        61:12450000,62:13280000,63:14130000,64:15170000,65:16251000,66:17377000,67:18553000,68:19778000,69:21055000,70:22385000,
+        71:23529000,72:25209000,73:26707000,74:28264000,75:29882000,76:31563000,77:33307000,78:35118000,79:36997000,80:38945000,
+        81:40965000,82:43059000,83:45229000,84:47476000,85:49803000,86:52211000,87:54704000,88:57284000,89:59953000,90:62712000,
+        91:65565000,92:68514000,93:71561000,94:74710000,95:77963000,96:81323000,97:84792000,98:88374000,99:92071000,100:95886000,
+        101:99823000,102:103885000,103:108075000,104:112396000,105:116853000,106:121447000,107:126184000,108:131066000,109:136098000,110:141283000,
+        111:146626000,112:152130000,113:157800000,114:163640000,115:169655000,116:175848000,117:182225000,118:188791000,119:195550000,120:202507000,
+        121:209667000,122:217037000,123:224620000,124:232424000,125:240452000,126:248712000,127:257209000,128:265949000,129:274939000,130:284186000,
+        131:293694000,132:303473000,133:313527000,134:323866000,135:334495000,136:345423000,137:356657000,138:368206000,139:380076000,140:392278000,
+        141:404818000,142:417706000,143:430952000,144:444564000,145:458551000,146:472924000,147:487693000,148:502867000,149:518458000,150:534476000,
+        151:551000000,152:567839000,153:585206000,154:603047000,155:621374000,156:640799000,157:659536000,158:679398000,159:699798000,160:720751000,
+        161:742272000,162:764374000,163:787074000,164:810387000,165:834329000,166:858917000,167:884167000,168:910098000,169:936727000,170:964073000,
+        171:992154000,172:1020991000,173:1050603000,174:1081010000,175:1112235000,176:1144298000,177:1177222000,178:1211030000,179:1245745000,180:1281393000,
+        181:1317997000,182:1355584000,183:1404179000,184:1463811000,185:1534506000,186:1616294000,187:1709205000,188:1813267000,189:1928513000,190:2054975000,
+        191:2192686000,192:2341679000,193:2501990000,194:2673655000,195:2856710000,196:3051194000,197:3257146000,198:3474606000,199:3703616000,200:5555424000
+    };
+
+    function getTotalXpToLevel(level) {
+        if (level <= 200) return XP_TABLE_OFFICIAL[level] || 0;
+        let total = XP_TABLE_OFFICIAL[200];
+        for (let omegaN = 1; omegaN <= (level - 200); omegaN++) {
+            total += getXpNeededForOmegaLevel(omegaN);
+        }
+        return total;
+    }
+
+    function getXpNeededForLevel(level) {
+        if (level < 1) return 0;
+        if (level < 200) return XP_TABLE_OFFICIAL[level + 1] - XP_TABLE_OFFICIAL[level];
+        if (level === 200) return getTotalXpForOmegaLevel(1) - XP_TABLE_OFFICIAL[200];
+        const omegaN = level - 200;
+        return getXpNeededForOmegaLevel(omegaN);
+    }
+
+    function getLevelFromTotalXp(totalXp) {
+        if (totalXp <= XP_TABLE_OFFICIAL[200]) {
+            for (let lvl = 199; lvl >= 1; lvl--) {
+                if (totalXp >= XP_TABLE_OFFICIAL[lvl]) {
+                    const xpInLevel = totalXp - XP_TABLE_OFFICIAL[lvl];
+                    const xpNeeded = getXpNeededForLevel(lvl);
+                    const percent = xpNeeded > 0 ? Math.floor((xpInLevel / xpNeeded) * 100) : 100;
+                    return { level: lvl, xpInLevel, xpNeeded, percent };
+                }
+            }
+        }
+        let remaining = totalXp - XP_TABLE_OFFICIAL[200];
+        let omegaLevel = 1;
+        while (omegaLevel <= 300) {
+            const needed = getXpNeededForOmegaLevel(omegaLevel);
+            if (remaining >= needed) {
+                remaining -= needed;
+                omegaLevel++;
+            } else {
+                const percent = needed > 0 ? Math.floor((remaining / needed) * 100) : 100;
+                return { level: 200 + omegaLevel, xpInLevel: remaining, xpNeeded: needed, percent };
+            }
+        }
+        return { level: 500, xpInLevel: 0, xpNeeded: 0, percent: 100 };
+    }
+
+    // ================ FONCTION POUR CALCULER LE MULTIPLICATEUR ================
+    function getXpMultiplier(bonusWeekend, bonusPotion, bonusFamilier, bonusCalamar, bonusSub, customPercent) {
+        let multiplier = (customPercent || 100) / 100;
+        if (bonusWeekend) multiplier += 0.5;
+        if (bonusPotion) multiplier += 0.3;
+        if (bonusFamilier) multiplier += 0.2;
+        if (bonusCalamar) multiplier += 0.15;
+        if (bonusSub) multiplier += 0.1;
+        return multiplier;
+    }
+
+    // ================ CALCULATEUR OMÉGA ================
+    function updateOmegaCalculator() {
+        let currentOmega = parseInt(document.getElementById('omega-current-omega').value) || 1;
+        let currentPercent = parseInt(document.getElementById('omega-current-xp').value) || 0;
+        let targetOmega = parseInt(document.getElementById('omega-target-omega').value) || 1;
+        let baseXpPerAction = parseInt(document.getElementById('omega-xp-per-action').value) || 1000000;
+        let customMultiplier = parseInt(document.getElementById('omega-xp-multiplier').value) || 100;
+        
+        let bonusWeekend = document.getElementById('omega-bonus-weekend').checked;
+        let bonusPotion = document.getElementById('omega-bonus-potion').checked;
+        let bonusFamilier = document.getElementById('omega-bonus-familier').checked;
+        let bonusCalamar = document.getElementById('omega-bonus-calamar').checked;
+        let bonusSub = document.getElementById('omega-bonus-sub').checked;
+        
+        let multiplier = getXpMultiplier(bonusWeekend, bonusPotion, bonusFamilier, bonusCalamar, bonusSub, customMultiplier);
+        let xpPerAction = Math.floor(baseXpPerAction * multiplier);
+        
+        let clipPrice = parseInt(document.getElementById('omega-clip-price').value) || 50000;
+        let potionPrice = parseInt(document.getElementById('omega-potion-price').value) || 2000;
+        let resourcePrice = parseInt(document.getElementById('omega-resource-price').value) || 0;
+        
+        if (currentOmega < 1) currentOmega = 1;
+        if (targetOmega < currentOmega) targetOmega = currentOmega;
+        
+        const currentTotalXp = getTotalXpForOmegaLevel(currentOmega);
+        const currentXpInLevel = (currentPercent / 100) * getXpNeededForOmegaLevel(currentOmega);
+        const targetTotalXp = getTotalXpForOmegaLevel(targetOmega);
+        let xpNeeded = Math.max(0, targetTotalXp - (currentTotalXp + currentXpInLevel));
+        let actionsNeeded = Math.ceil(xpNeeded / xpPerAction);
+        
+        let clipCost = actionsNeeded * clipPrice;
+        let potionCost = actionsNeeded * potionPrice;
+        let resourceCost = actionsNeeded * resourcePrice;
+        let totalKamasCost = clipCost + potionCost + resourceCost;
+        
+        const resultDiv = document.getElementById('omega-result');
+        const resultContent = document.getElementById('omega-result-content');
+        resultDiv.style.display = 'block';
+        resultContent.innerHTML = `
+            <div class="result-main-value"><div class="result-main-number">${actionsNeeded.toLocaleString('fr-FR')}</div><div class="result-main-label">actions nécessaires</div></div>
+            <div class="result-detail"><span>🌀 XP requise</span><span>${xpNeeded.toLocaleString('fr-FR')} XP</span></div>
+            <div class="result-detail"><span>⚡ XP par action (avec bonus)</span><span>${xpPerAction.toLocaleString('fr-FR')} XP</span></div>
+            <div class="result-detail"><span>🎁 Multiplicateur total</span><span>${(multiplier * 100).toFixed(0)}%</span></div>
+            <div class="result-detail"><span>📊 Niveau actuel</span><span>Oméga ${currentOmega} (niveau ${200 + currentOmega}) (${currentPercent}%)</span></div>
+            <div class="result-detail"><span>🎯 Niveau cible</span><span>Oméga ${targetOmega} (niveau ${200 + targetOmega})</span></div>
+            <div class="result-detail" style="background:#1a3a2a; margin-top:10px;"><span class="total-cost">💰 Coût total estimé</span><span class="total-cost">${totalKamasCost.toLocaleString('fr-FR')} Kamas</span></div>
+            <div class="result-detail"><span>└ Clips (${clipPrice.toLocaleString()} Kamas)</span><span>${clipCost.toLocaleString('fr-FR')} Kamas</span></div>
+            <div class="result-detail"><span>└ Potions (${potionPrice.toLocaleString()} Kamas)</span><span>${potionCost.toLocaleString('fr-FR')} Kamas</span></div>
+            ${resourcePrice > 0 ? `<div class="result-detail"><span>└ Ressources</span><span>${resourceCost.toLocaleString('fr-FR')} Kamas</span></div>` : ''}
+        `;
+        
+        let detailHtml = `<div class="result-main-label">📈 Détail des prochains paliers</div>`;
+        let maxShow = Math.min(currentOmega + 8, targetOmega);
+        for (let n = currentOmega; n < maxShow; n++) {
+            const xpToNext = getXpNeededForOmegaLevel(n);
+            detailHtml += `<div class="result-detail"><span>Oméga ${n} → ${n+1} (niv.${200+n}→${201+n})</span><span>${xpToNext.toLocaleString('fr-FR')} XP</span></div>`;
+        }
+        document.getElementById('omega-detail').style.display = 'block';
+        document.getElementById('omega-detail-content').innerHTML = detailHtml;
+    }
+
+    function renderOmegaTablePreview() {
+        const container = document.getElementById('omega-table-preview');
+        if (!container) return;
+        let html = '';
+        for (let n = 1; n <= 20; n++) {
+            const totalXp = getTotalXpForOmegaLevel(n);
+            const xpNeeded = getXpNeededForOmegaLevel(n);
+            const dofusLevel = 200 + n;
+            html += `<div class="xp-table-item">
+                        <span class="xp-level">Oméga ${n}<br>(niv.${dofusLevel})</span>
+                        <span class="xp-value">${totalXp.toLocaleString('fr-FR')} XP</span>
+                        <span style="font-size:9px;">→ +${xpNeeded.toLocaleString('fr-FR')}</span>
+                    </div>`;
+        }
+        container.innerHTML = html;
+    }
+
+    // ================ CALCULATEUR DONJONS ================
+    function updateDungeonCalculator() {
+        let currentLevel = parseInt(document.getElementById('dungeon-current-level').value) || 1;
+        let currentXp = parseInt(document.getElementById('dungeon-current-xp').value) || 0;
+        let targetLevel = parseInt(document.getElementById('dungeon-target-level').value) || 200;
+        let baseXpPerDungeon = parseInt(document.getElementById('dungeon-xp-value').value) || 1000000;
+        let customMultiplier = parseInt(document.getElementById('dungeon-xp-multiplier').value) || 100;
+        
+        let bonusWeekend = document.getElementById('dungeon-bonus-weekend').checked;
+        let bonusPotion = document.getElementById('dungeon-bonus-potion').checked;
+        let bonusFamilier = document.getElementById('dungeon-bonus-familier').checked;
+        let bonusCalamar = document.getElementById('dungeon-bonus-calamar').checked;
+        let bonusSub = document.getElementById('dungeon-bonus-sub').checked;
+        
+        let multiplier = getXpMultiplier(bonusWeekend, bonusPotion, bonusFamilier, bonusCalamar, bonusSub, customMultiplier);
+        let xpPerDungeon = Math.floor(baseXpPerDungeon * multiplier);
+        
+        if (currentLevel<1||currentLevel>200||targetLevel<1||targetLevel>200) { showToast('Niveau invalide'); return; }
+        if (targetLevel<=currentLevel && currentXp===0) { showResultMsg('dungeon-result','dungeon-result-content','🎉 Objectif déjà atteint !'); return; }
+        
+        const xpNeededCurrent = getXpNeededForLevel(currentLevel);
+        let currentXpAmount = (currentXp/100)*xpNeededCurrent;
+        let totalXpNeeded = Math.max(0, xpNeededCurrent - currentXpAmount);
+        for (let lvl=currentLevel+1; lvl<targetLevel; lvl++) totalXpNeeded += getXpNeededForLevel(lvl);
+        const dungeonsNeeded = Math.ceil(totalXpNeeded / xpPerDungeon);
+        
+        document.getElementById('dungeon-result').style.display='block';
+        document.getElementById('dungeon-result-content').innerHTML = `
+            <div class="result-main-value"><div class="result-main-number">${dungeonsNeeded.toLocaleString('fr-FR')}</div><div class="result-main-label">donjons nécessaires</div></div>
+            <div class="result-detail"><span>📊 XP totale requise</span><span>${totalXpNeeded.toLocaleString('fr-FR')} XP</span></div>
+            <div class="result-detail"><span>⚡ XP par donjon (avec bonus)</span><span>${xpPerDungeon.toLocaleString('fr-FR')} XP</span></div>
+            <div class="result-detail"><span>🎁 Multiplicateur total</span><span>${(multiplier * 100).toFixed(0)}%</span></div>
+            <div class="result-detail"><span>🎯 Cible niveau ${targetLevel}</span><span>${targetLevel}</span></div>
+        `;
+    }
+    
+    function updateDungeonProgress() {
+        let level = parseInt(document.getElementById('dungeon-progress-level').value)||1;
+        let percent = parseInt(document.getElementById('dungeon-progress-xp').value)||0;
+        let dungeons = parseInt(document.getElementById('dungeon-count').value)||0;
+        let xpPer = parseInt(document.getElementById('dungeon-xp-value-progress').value)||500000;
+        let currentXpTotal = getTotalXpToLevel(level) + (percent/100)*getXpNeededForLevel(level);
+        let totalGain = dungeons * xpPer;
+        let final = getLevelFromTotalXp(currentXpTotal + totalGain);
+        document.getElementById('dungeon-progress-result').style.display='block';
+        document.getElementById('dungeon-progress-content').innerHTML = `<div class="result-main-value"><div class="result-main-number">${final.level}</div><div class="result-main-label">niveau atteint (${final.percent}%)</div></div><div class="result-detail"><span>📈 XP gagnée</span><span>${totalGain.toLocaleString()} XP</span></div><div class="result-detail"><span>🏆 Progression</span><span>+${final.level - level} niveaux</span></div>`;
+    }
+    
+    // ================ CALCULATEUR MONTURE ================
+    const MOUNT_XP_TABLE = { 1:0,2:100,3:250,4:450,5:700,6:1000,7:1350,8:1750,9:2200,10:2700,11:3250,12:3850,13:4500,14:5200,15:5950,16:6750,17:7600,18:8500,19:9450,20:10450,21:11500,22:12600,23:13750,24:14950,25:16200,26:17500,27:18850,28:20250,29:21700,30:23200,31:24750,32:26350,33:28000,34:29700,35:31450,36:33250,37:35100,38:37000,39:38950,40:40950,41:43000,42:45100,43:47250,44:49450,45:51700,46:54000,47:56350,48:58750,49:61200,50:63700,51:66250,52:68850,53:71500,54:74200,55:76950,56:79750,57:82600,58:85500,59:88450,60:91450,61:94500,62:97600,63:100750,64:103950,65:107200,66:110500,67:113850,68:117250,69:120700,70:124200,71:127750,72:131350,73:135000,74:138700,75:142450,76:146250,77:150100,78:154000,79:157950,80:161950,81:166000,82:170100,83:174250,84:178450,85:182700,86:187000,87:191350,88:195750,89:200200,90:204700,91:209250,92:213850,93:218500,94:223200,95:227950,96:232750,97:237600,98:242500,99:247450,100:252450 };
+    function getMountXpRequired(level){ let total=0; for(let i=2;i<=level;i++) total+=MOUNT_XP_TABLE[i]||0; return total; }
+    function getCurrentMountXp(level,percent){ if(level>=100) return getMountXpRequired(100); let toThis=getMountXpRequired(level); let nextXp=MOUNT_XP_TABLE[level+1]||0; return toThis+(percent/100)*nextXp; }
+    
+    function updateMountCalculator(){
+        let currentLevel=parseInt(document.getElementById('mount-current-level').value)||1;
+        let currentXpPercent=parseInt(document.getElementById('mount-current-xp').value)||0;
+        let targetLevel=parseInt(document.getElementById('mount-target-level').value)||100;
+        let baseXpPerAction=parseInt(document.getElementById('mount-xp-per-action').value)||500;
+        let customMultiplier=parseInt(document.getElementById('mount-xp-multiplier').value)||100;
+        let costPerAction=parseInt(document.getElementById('mount-cost-per-action').value)||0;
+        let timePer=parseInt(document.getElementById('mount-time-per-action').value)||30;
+        let clipPrice=parseInt(document.getElementById('mount-clip-price').value)||50000;
+        let potionPrice=parseInt(document.getElementById('mount-potion-price').value)||2000;
+        
+        let multiplier = customMultiplier / 100;
+        let xpPerAction = Math.floor(baseXpPerAction * multiplier);
+        
+        if(currentLevel<1||currentLevel>100||targetLevel<1||targetLevel>100){showToast('Niveau monture 1-100');return;}
+        if(targetLevel<=currentLevel&&currentXpPercent===0){ showResultMsg('mount-result','mount-result-content','✅ Objectif déjà atteint'); return; }
+        let currentXp=getCurrentMountXp(currentLevel,currentXpPercent);
+        let targetXp=getMountXpRequired(targetLevel);
+        let xpNeeded=Math.max(0,targetXp-currentXp);
+        let actionsNeeded=Math.ceil(xpNeeded/xpPerAction);
+        let totalCost=actionsNeeded*costPerAction;
+        let totalSec=actionsNeeded*timePer;
+        let days=Math.floor(totalSec/86400), hours=Math.floor((totalSec%86400)/3600), mins=Math.floor((totalSec%3600)/60), secs=totalSec%60;
+        let timeStr=`${days>0?days+'j ':''}${hours>0?hours+'h ':''}${mins>0?mins+'min ':''}${secs}s`;
+        let progressPercent=Math.min(100,Math.round((currentXp/getMountXpRequired(100))*100));
+        
+        let clipCost = actionsNeeded * clipPrice;
+        let potionCost = actionsNeeded * potionPrice;
+        let totalKamasCost = totalCost + clipCost + potionCost;
+        
+        let resultDiv=document.getElementById('mount-result'), resultContent=document.getElementById('mount-result-content');
+        if(resultDiv){resultDiv.style.display='block'; resultContent.innerHTML=`
+            <div class="result-main-value"><div class="result-main-number">${actionsNeeded.toLocaleString()}</div><div class="result-main-label">actions nécessaires</div></div>
+            <div class="result-detail"><span>XP nécessaire</span><span>${xpNeeded.toLocaleString()} XP</span></div>
+            <div class="result-detail"><span>⚡ XP par action (avec bonus)</span><span>${xpPerAction.toLocaleString()} XP</span></div>
+            <div class="result-detail"><span>🎁 Multiplicateur</span><span>${multiplier * 100}%</span></div>
+            <div class="result-detail" style="background:#1a3a2a;"><span class="total-cost">💰 Coût total estimé</span><span class="total-cost">${totalKamasCost.toLocaleString()} Kamas</span></div>
+            <div class="result-detail"><span>└ Actions (${costPerAction.toLocaleString()} Kamas)</span><span>${totalCost.toLocaleString()} Kamas</span></div>
+            <div class="result-detail"><span>└ Clips (${clipPrice.toLocaleString()} Kamas)</span><span>${clipCost.toLocaleString()} Kamas</span></div>
+            <div class="result-detail"><span>└ Potions (${potionPrice.toLocaleString()} Kamas)</span><span>${potionCost.toLocaleString()} Kamas</span></div>
+            <div class="result-detail"><span>⏱️ Temps estimé</span><span>${timeStr}</span></div>
+        `;}
+        let fill=document.getElementById('mount-progress-fill'); if(fill) fill.style.width=`${progressPercent}%`;
+        updateMarkers(currentLevel);
+    }
+    
+    function updateMarkers(currentLevel){ let container=document.getElementById('level-markers'); if(container){ let milestones=[10,20,30,40,50,60,70,80,90,100]; container.innerHTML=milestones.map(lvl=>`<span class="level-marker ${lvl<=currentLevel?'milestone':''}" onclick="document.getElementById('mount-target-level').value=${lvl}; updateMountCalculator();">${lvl}</span>`).join(''); } }
+    
+    function renderMountXpTable(){ const ranges=[[1,20,'mount-xp-1-20'],[21,40,'mount-xp-21-40'],[41,60,'mount-xp-41-60'],[61,80,'mount-xp-61-80'],[81,100,'mount-xp-81-100']]; for(let [s,e,id] of ranges){ let container=document.getElementById(id); if(container){ let html=''; for(let i=s;i<=e;i++){ let xpToNext=MOUNT_XP_TABLE[i+1]||0; let cumul=getMountXpRequired(i); html+=`<div class="xp-table-item"><span class="xp-level">${i}</span><span class="xp-value">${xpToNext.toLocaleString()} XP</span><span style="font-size:9px;">(total:${cumul.toLocaleString()})</span></div>`; } container.innerHTML=html; } } }
+    function toggleMountTable(){ let el=document.getElementById('mount-xp-table'); if(el) el.style.display=el.style.display==='none'?'block':'none'; }
+    
+    function generateFullXpTable(){
+        const ranges=[[1,50,'xp-levels-1-50'],[51,100,'xp-levels-51-100'],[101,150,'xp-levels-101-150'],[151,190,'xp-levels-151-190'],[191,200,'xp-levels-191-200']];
+        for(let [s,e,id] of ranges){ let container=document.getElementById(id); if(container){ let html=''; for(let i=s;i<=e;i++){ let xpNeeded=getXpNeededForLevel(i); if(xpNeeded>0) html+=`<div class="xp-table-item"><span class="xp-level">${i}</span><span class="xp-value">${xpNeeded.toLocaleString()} XP</span><span style="font-size:9px;"> (total:${getTotalXpToLevel(i).toLocaleString()})</span></div>`; } container.innerHTML=html; } }
+    }
+    
+    function showResultMsg(container,contentId,msg){ let d=document.getElementById(container); if(d){ d.style.display='block'; document.getElementById(contentId).innerHTML=`<div style="text-align:center;">${msg}</div>`; } }
+    function showToast(msg){ let t=document.createElement('div'); t.className='toast'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2500);}
+    
+    // ================ BINDINGS & INIT ================
+    function bindEvents(){
+        ['mount-current-level','mount-current-xp','mount-target-level','mount-xp-per-action','mount-cost-per-action','mount-time-per-action','mount-xp-multiplier','mount-clip-price','mount-potion-price'].forEach(id=>{ let el=document.getElementById(id); if(el) el.addEventListener('input',updateMountCalculator); });
+        document.getElementById('dungeon-current-level')?.addEventListener('input',updateDungeonCalculator);
+        document.getElementById('dungeon-current-xp')?.addEventListener('input',updateDungeonCalculator);
+        document.getElementById('dungeon-target-level')?.addEventListener('input',updateDungeonCalculator);
+        document.getElementById('dungeon-xp-slider')?.addEventListener('input',e=>{ let v=e.target.value; document.getElementById('dungeon-xp-value').value=v; updateDungeonCalculator(); });
+        document.getElementById('dungeon-xp-value')?.addEventListener('input',e=>{ let v=e.target.value; document.getElementById('dungeon-xp-slider').value=v; updateDungeonCalculator(); });
+        document.getElementById('dungeon-xp-multiplier')?.addEventListener('input',updateDungeonCalculator);
+        document.getElementById('dungeon-xp-slider-progress')?.addEventListener('input',e=>{ let v=e.target.value; document.getElementById('dungeon-xp-value-progress').value=v; updateDungeonProgress(); });
+        document.getElementById('dungeon-xp-value-progress')?.addEventListener('input',e=>{ let v=e.target.value; document.getElementById('dungeon-xp-slider-progress').value=v; updateDungeonProgress(); });
+        document.getElementById('calc-progress-btn')?.addEventListener('click',updateDungeonProgress);
+        document.getElementById('switch-to-progress')?.addEventListener('click',()=>{ document.getElementById('dungeon-progress-card').scrollIntoView({behavior:'smooth'}); });
+        document.getElementById('mount-type')?.addEventListener('change',()=>{ let type=document.getElementById('mount-type').value; let baseXp=500; if(type==='muldo') baseXp=800; else if(type==='volkorne') baseXp=700; document.getElementById('mount-xp-per-action').value=baseXp; updateMountCalculator(); });
+        document.getElementById('toggleMountTableBtn')?.addEventListener('click',toggleMountTable);
+        document.getElementById('toggleXpTableBtn')?.addEventListener('click',()=>{ let el=document.getElementById('xp-table-full'); if(el) el.style.display=el.style.display==='none'?'block':'none'; });
+        
+        ['omega-current-omega','omega-current-xp','omega-target-omega','omega-xp-per-action','omega-xp-multiplier','omega-clip-price','omega-potion-price','omega-resource-price'].forEach(id=>{ let el=document.getElementById(id); if(el) el.addEventListener('input',updateOmegaCalculator); });
+        ['omega-bonus-weekend','omega-bonus-potion','omega-bonus-familier','omega-bonus-calamar','omega-bonus-sub','dungeon-bonus-weekend','dungeon-bonus-potion','dungeon-bonus-familier','dungeon-bonus-calamar','dungeon-bonus-sub'].forEach(id=>{ let el=document.getElementById(id); if(el) el.addEventListener('change',()=>{ updateOmegaCalculator(); updateDungeonCalculator(); }); });
+    }
+    
+    function initTabs(){ document.querySelectorAll('.tab-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ let tabId=btn.getAttribute('data-tab'); document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.getElementById(tabId).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); if(tabId==='tab-mount') updateMountCalculator(); else if(tabId==='tab-dungeon'){ updateDungeonCalculator(); updateDungeonProgress(); } else if(tabId==='tab-omega') updateOmegaCalculator(); }); }); }
+    
+    window.addEventListener('DOMContentLoaded',()=>{
+        generateFullXpTable();
+        renderMountXpTable();
+        renderOmegaTablePreview();
+        updateMountCalculator();
+        updateDungeonCalculator();
+        updateDungeonProgress();
+        updateOmegaCalculator();
+        bindEvents();
+        initTabs();
+        document.getElementById('xp-table-full').style.display='block';
+    });
+</script>
+</body>
+</html>
