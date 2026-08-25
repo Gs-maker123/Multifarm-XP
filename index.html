@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Dofus 3.5 - Calculateur XP : Personnage, Monture, Donjons & Oméga</title>
+    <title>Dofus 3.5 - Calculateur XP</title>
+    <meta name="description" content="Calculateur XP complet pour Dofus 3.5 - Personnage, Monture, Donjons & Niveaux Oméga">
+    <meta name="author" content="GSTK - Multifarm">
+    <meta name="keywords" content="Dofus, XP, Calculateur, Monture, Donjon, Oméga, 3.5">
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐉</text></svg>">
     <style>
         * {
             margin: 0;
@@ -15,6 +19,7 @@
             background: linear-gradient(135deg, #1a2a3a 0%, #0f1a24 100%);
             font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, 'Inter', sans-serif;
             color: #eef2ff;
+            min-height: 100vh;
         }
 
         .fixed-header {
@@ -40,6 +45,17 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .fixed-header .version {
+            font-size: 0.7rem;
+            color: #6c8b9a;
+            background: #1e2f3a;
+            padding: 2px 10px;
+            border-radius: 20px;
+            margin-left: 8px;
         }
         .fixed-header p {
             font-size: 0.8rem;
@@ -71,6 +87,13 @@
         }
         .fixed-footer .separator {
             color: #3e5a66;
+        }
+        .fixed-footer a {
+            color: #6c8b9a;
+            text-decoration: none;
+        }
+        .fixed-footer a:hover {
+            color: #f4b942;
         }
 
         .main-scrollable {
@@ -192,6 +215,14 @@
             border-color: #f4b942;
             box-shadow: 0 0 0 2px rgba(244,185,66,0.3);
         }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
         .range-row {
             display: flex;
             gap: 15px;
@@ -277,6 +308,9 @@
             flex-wrap: wrap;
             gap: 5px;
         }
+        .xp-table-item:nth-child(odd) {
+            background: #1a2f3a;
+        }
         .xp-level {
             font-weight: bold;
             background: #1e3b44;
@@ -292,6 +326,10 @@
             cursor: pointer;
             transition: 0.1s;
             display: inline-block;
+        }
+        .level-marker:hover {
+            background: #3e6c7e;
+            transform: scale(1.05);
         }
         .level-marker.milestone {
             background: #f4b942;
@@ -315,24 +353,26 @@
             z-index: 1100;
             font-weight: 500;
             backdrop-filter: blur(12px);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px);}
+            to { opacity: 1; transform: translateX(-50%) translateY(0);}
         }
         .omega-highlight {
             background: linear-gradient(135deg, #1e3a2f, #0f2a1f);
             border: 1px solid #f4b942;
         }
-        .bonus-badge {
-            background: #2c4f5e;
-            border-radius: 20px;
-            padding: 8px 12px;
-            font-size: 0.75rem;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
         .total-cost {
             font-size: 1.2rem;
             font-weight: bold;
             color: #f5bc70;
+        }
+        .github-corner {
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 1001;
         }
         @media (max-width: 640px) {
             .card { padding: 18px; }
@@ -340,14 +380,24 @@
             .fixed-header h1 { font-size: 1.2rem; }
             .main-scrollable { padding-top: 100px; }
             .fixed-footer .footer-content { gap: 10px; flex-direction: column; }
+            .result-main-number { font-size: 2.4rem; }
         }
     </style>
 </head>
 <body>
 
+<!-- GitHub Corner -->
+<a href="https://github.com/votre-username/dofus-xp-calculator" class="github-corner" aria-label="View source on GitHub">
+    <svg width="60" height="60" viewBox="0 0 250 250" style="fill:#f4b942; color:#1a2a3a; position:fixed; top:0; right:0; border:0; z-index:1001;">
+        <path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path>
+        <path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path>
+        <path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path>
+    </svg>
+</a>
+
 <div class="fixed-header">
     <div class="header-content">
-        <h1>🐉 DOFUS 3.5 · XP PROGRESS + OMÉGA</h1>
+        <h1>🐉 DOFUS 3.5 · XP PROGRESS <span class="version">v1.0</span></h1>
         <p>Personnage (1→200) • Monture • Donjons • Niveaux Oméga (201+)</p>
     </div>
 </div>
@@ -356,7 +406,7 @@
     <div class="footer-content">
         <span>⚡ Formule : XP_Total(n) = 5 000 000 000 × 1,01^n + 555 424 000 | n = niveau Oméga (1 = 201)</span>
         <span class="separator">•</span>
-        <span>✨ Multifarm - Xp by GSTK © 2026</span>
+        <span>✨ <a href="https://github.com/votre-username/dofus-xp-calculator" target="_blank">Multifarm - Xp by GSTK © 2026</a></span>
     </div>
 </div>
 
@@ -367,7 +417,7 @@
         <button class="tab-btn" data-tab="tab-omega">🌀 Oméga (201+)</button>
     </div>
 
-    <!-- SECTION MONTURE -->
+    <!-- ==================== SECTION MONTURE ==================== -->
     <div id="tab-mount" class="tab-content active">
         <div class="card">
             <div class="card-title">🐴 Calculateur de Monture (Niv. 1 → 100)</div>
@@ -397,8 +447,12 @@
                 </div>
                 <div>
                     <div class="input-group">
-                        <label>⚡ XP par action (combat / élevage)</label>
+                        <label>⚡ XP par action (base)</label>
                         <input type="number" id="mount-xp-per-action" value="500" step="50">
+                    </div>
+                    <div class="input-group">
+                        <label>🎁 Multiplicateur XP (%)</label>
+                        <input type="number" id="mount-xp-multiplier" value="100" step="10" min="50" max="300">
                     </div>
                     <div class="input-group">
                         <label>💰 Coût par action (Kamas)</label>
@@ -415,13 +469,7 @@
                 </div>
             </div>
             
-            <!-- Section bonus XP et coûts -->
             <div class="grid-3cols" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #3e5a66;">
-                <div class="input-group">
-                    <label>🎁 Multiplicateur XP (%)</label>
-                    <input type="number" id="mount-xp-multiplier" value="100" step="10" min="50" max="300">
-                    <small style="color:#8aaec0;">100% = normal</small>
-                </div>
                 <div class="input-group">
                     <label>💰 Coût Clip (Kamas)</label>
                     <input type="number" id="mount-clip-price" value="50000" step="5000">
@@ -458,7 +506,7 @@
         </div>
     </div>
 
-    <!-- SECTION DONJONS -->
+    <!-- ==================== SECTION DONJONS ==================== -->
     <div id="tab-dungeon" class="tab-content">
         <div class="card">
             <div class="card-title">🏆 Calculateur de Donjons (Personnage 1→200)</div>
@@ -490,15 +538,6 @@
                         <input type="number" id="dungeon-xp-multiplier" value="100" step="10" min="50" max="300">
                     </div>
                 </div>
-            </div>
-            
-            <!-- Section bonus XP -->
-            <div class="grid-3cols" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #3e5a66;">
-                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-weekend"> 🎉 Week-end XP (+50%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-potion"> 🧪 Potion d'XP (+30%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-familier"> 🐕 Familier (+20%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-calamar"> 🦑 Calamar (+15%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="dungeon-bonus-sub"> 👑 Abonnement (+10%)</div>
             </div>
             
             <div class="result-box" id="dungeon-result" style="display: none;">
@@ -553,7 +592,7 @@
         </div>
     </div>
 
-    <!-- SECTION OMÉGA (201+) -->
+    <!-- ==================== SECTION OMÉGA ==================== -->
     <div id="tab-omega" class="tab-content">
         <div class="card omega-highlight">
             <div class="card-title">🌀 Calculateur Oméga <span class="omega-badge">Niveaux 201+</span></div>
@@ -584,16 +623,7 @@
                 </div>
             </div>
             
-            <!-- Section bonus XP et coûts pour Oméga -->
             <div class="grid-3cols" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #3e5a66;">
-                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-weekend"> 🎉 Week-end XP (+50%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-potion"> 🧪 Potion d'XP (+30%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-familier"> 🐕 Familier (+20%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-calamar"> 🦑 Calamar (+15%)</div>
-                <div class="bonus-badge"><input type="checkbox" id="omega-bonus-sub"> 👑 Abonnement (+10%)</div>
-            </div>
-            
-            <div class="grid-3cols" style="margin-top: 10px;">
                 <div class="input-group">
                     <label>💰 Coût Clip (Kamas)</label>
                     <input type="number" id="omega-clip-price" value="50000" step="5000">
@@ -704,17 +734,6 @@
         return { level: 500, xpInLevel: 0, xpNeeded: 0, percent: 100 };
     }
 
-    // ================ FONCTION POUR CALCULER LE MULTIPLICATEUR ================
-    function getXpMultiplier(bonusWeekend, bonusPotion, bonusFamilier, bonusCalamar, bonusSub, customPercent) {
-        let multiplier = (customPercent || 100) / 100;
-        if (bonusWeekend) multiplier += 0.5;
-        if (bonusPotion) multiplier += 0.3;
-        if (bonusFamilier) multiplier += 0.2;
-        if (bonusCalamar) multiplier += 0.15;
-        if (bonusSub) multiplier += 0.1;
-        return multiplier;
-    }
-
     // ================ CALCULATEUR OMÉGA ================
     function updateOmegaCalculator() {
         let currentOmega = parseInt(document.getElementById('omega-current-omega').value) || 1;
@@ -723,13 +742,7 @@
         let baseXpPerAction = parseInt(document.getElementById('omega-xp-per-action').value) || 1000000;
         let customMultiplier = parseInt(document.getElementById('omega-xp-multiplier').value) || 100;
         
-        let bonusWeekend = document.getElementById('omega-bonus-weekend').checked;
-        let bonusPotion = document.getElementById('omega-bonus-potion').checked;
-        let bonusFamilier = document.getElementById('omega-bonus-familier').checked;
-        let bonusCalamar = document.getElementById('omega-bonus-calamar').checked;
-        let bonusSub = document.getElementById('omega-bonus-sub').checked;
-        
-        let multiplier = getXpMultiplier(bonusWeekend, bonusPotion, bonusFamilier, bonusCalamar, bonusSub, customMultiplier);
+        let multiplier = customMultiplier / 100;
         let xpPerAction = Math.floor(baseXpPerAction * multiplier);
         
         let clipPrice = parseInt(document.getElementById('omega-clip-price').value) || 50000;
@@ -756,8 +769,8 @@
         resultContent.innerHTML = `
             <div class="result-main-value"><div class="result-main-number">${actionsNeeded.toLocaleString('fr-FR')}</div><div class="result-main-label">actions nécessaires</div></div>
             <div class="result-detail"><span>🌀 XP requise</span><span>${xpNeeded.toLocaleString('fr-FR')} XP</span></div>
-            <div class="result-detail"><span>⚡ XP par action (avec bonus)</span><span>${xpPerAction.toLocaleString('fr-FR')} XP</span></div>
-            <div class="result-detail"><span>🎁 Multiplicateur total</span><span>${(multiplier * 100).toFixed(0)}%</span></div>
+            <div class="result-detail"><span>⚡ XP par action</span><span>${xpPerAction.toLocaleString('fr-FR')} XP</span></div>
+            <div class="result-detail"><span>🎁 Multiplicateur</span><span>${multiplier * 100}%</span></div>
             <div class="result-detail"><span>📊 Niveau actuel</span><span>Oméga ${currentOmega} (niveau ${200 + currentOmega}) (${currentPercent}%)</span></div>
             <div class="result-detail"><span>🎯 Niveau cible</span><span>Oméga ${targetOmega} (niveau ${200 + targetOmega})</span></div>
             <div class="result-detail" style="background:#1a3a2a; margin-top:10px;"><span class="total-cost">💰 Coût total estimé</span><span class="total-cost">${totalKamasCost.toLocaleString('fr-FR')} Kamas</span></div>
@@ -801,13 +814,7 @@
         let baseXpPerDungeon = parseInt(document.getElementById('dungeon-xp-value').value) || 1000000;
         let customMultiplier = parseInt(document.getElementById('dungeon-xp-multiplier').value) || 100;
         
-        let bonusWeekend = document.getElementById('dungeon-bonus-weekend').checked;
-        let bonusPotion = document.getElementById('dungeon-bonus-potion').checked;
-        let bonusFamilier = document.getElementById('dungeon-bonus-familier').checked;
-        let bonusCalamar = document.getElementById('dungeon-bonus-calamar').checked;
-        let bonusSub = document.getElementById('dungeon-bonus-sub').checked;
-        
-        let multiplier = getXpMultiplier(bonusWeekend, bonusPotion, bonusFamilier, bonusCalamar, bonusSub, customMultiplier);
+        let multiplier = customMultiplier / 100;
         let xpPerDungeon = Math.floor(baseXpPerDungeon * multiplier);
         
         if (currentLevel<1||currentLevel>200||targetLevel<1||targetLevel>200) { showToast('Niveau invalide'); return; }
@@ -823,8 +830,8 @@
         document.getElementById('dungeon-result-content').innerHTML = `
             <div class="result-main-value"><div class="result-main-number">${dungeonsNeeded.toLocaleString('fr-FR')}</div><div class="result-main-label">donjons nécessaires</div></div>
             <div class="result-detail"><span>📊 XP totale requise</span><span>${totalXpNeeded.toLocaleString('fr-FR')} XP</span></div>
-            <div class="result-detail"><span>⚡ XP par donjon (avec bonus)</span><span>${xpPerDungeon.toLocaleString('fr-FR')} XP</span></div>
-            <div class="result-detail"><span>🎁 Multiplicateur total</span><span>${(multiplier * 100).toFixed(0)}%</span></div>
+            <div class="result-detail"><span>⚡ XP par donjon</span><span>${xpPerDungeon.toLocaleString('fr-FR')} XP</span></div>
+            <div class="result-detail"><span>🎁 Multiplicateur</span><span>${multiplier * 100}%</span></div>
             <div class="result-detail"><span>🎯 Cible niveau ${targetLevel}</span><span>${targetLevel}</span></div>
         `;
     }
@@ -880,7 +887,7 @@
         if(resultDiv){resultDiv.style.display='block'; resultContent.innerHTML=`
             <div class="result-main-value"><div class="result-main-number">${actionsNeeded.toLocaleString()}</div><div class="result-main-label">actions nécessaires</div></div>
             <div class="result-detail"><span>XP nécessaire</span><span>${xpNeeded.toLocaleString()} XP</span></div>
-            <div class="result-detail"><span>⚡ XP par action (avec bonus)</span><span>${xpPerAction.toLocaleString()} XP</span></div>
+            <div class="result-detail"><span>⚡ XP par action</span><span>${xpPerAction.toLocaleString()} XP</span></div>
             <div class="result-detail"><span>🎁 Multiplicateur</span><span>${multiplier * 100}%</span></div>
             <div class="result-detail" style="background:#1a3a2a;"><span class="total-cost">💰 Coût total estimé</span><span class="total-cost">${totalKamasCost.toLocaleString()} Kamas</span></div>
             <div class="result-detail"><span>└ Actions (${costPerAction.toLocaleString()} Kamas)</span><span>${totalCost.toLocaleString()} Kamas</span></div>
@@ -905,7 +912,7 @@
     function showResultMsg(container,contentId,msg){ let d=document.getElementById(container); if(d){ d.style.display='block'; document.getElementById(contentId).innerHTML=`<div style="text-align:center;">${msg}</div>`; } }
     function showToast(msg){ let t=document.createElement('div'); t.className='toast'; t.innerText=msg; document.body.appendChild(t); setTimeout(()=>t.remove(),2500);}
     
-    // ================ BINDINGS & INIT ================
+    // ================ BINDINGS ================
     function bindEvents(){
         ['mount-current-level','mount-current-xp','mount-target-level','mount-xp-per-action','mount-cost-per-action','mount-time-per-action','mount-xp-multiplier','mount-clip-price','mount-potion-price'].forEach(id=>{ let el=document.getElementById(id); if(el) el.addEventListener('input',updateMountCalculator); });
         document.getElementById('dungeon-current-level')?.addEventListener('input',updateDungeonCalculator);
@@ -923,7 +930,6 @@
         document.getElementById('toggleXpTableBtn')?.addEventListener('click',()=>{ let el=document.getElementById('xp-table-full'); if(el) el.style.display=el.style.display==='none'?'block':'none'; });
         
         ['omega-current-omega','omega-current-xp','omega-target-omega','omega-xp-per-action','omega-xp-multiplier','omega-clip-price','omega-potion-price','omega-resource-price'].forEach(id=>{ let el=document.getElementById(id); if(el) el.addEventListener('input',updateOmegaCalculator); });
-        ['omega-bonus-weekend','omega-bonus-potion','omega-bonus-familier','omega-bonus-calamar','omega-bonus-sub','dungeon-bonus-weekend','dungeon-bonus-potion','dungeon-bonus-familier','dungeon-bonus-calamar','dungeon-bonus-sub'].forEach(id=>{ let el=document.getElementById(id); if(el) el.addEventListener('change',()=>{ updateOmegaCalculator(); updateDungeonCalculator(); }); });
     }
     
     function initTabs(){ document.querySelectorAll('.tab-btn').forEach(btn=>{ btn.addEventListener('click',()=>{ let tabId=btn.getAttribute('data-tab'); document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active')); document.getElementById(tabId).classList.add('active'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); if(tabId==='tab-mount') updateMountCalculator(); else if(tabId==='tab-dungeon'){ updateDungeonCalculator(); updateDungeonProgress(); } else if(tabId==='tab-omega') updateOmegaCalculator(); }); }); }
